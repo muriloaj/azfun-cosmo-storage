@@ -1,0 +1,58 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  # Nome da conexão de serviço configurada no Azure DevOps (para autenticação com o Azure)
+  azureSubscription: 'MinhaConexaoAzure'
+  resourceGroup: 'myResourceGroup'
+  functionAppName: 'myfunctionapp123'
+  artifactName: 'drop'
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: 'Restaurar pacotes NuGet'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Compilar o projeto'
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--configuration Release'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Publicar o projeto'
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: '**/*.csproj'
+    arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: true
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publicar artefatos'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: '$(artifactName)'
+    publishLocation: 'Container'
+
+- task: AzureCLI@2
+  displayName: 'Deploy na Function App'
+  inputs:
+    azureSubscription: '$(azureSubscription)'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      echo "Localizando arquivo zip de publicação..."
+      zipFile=$(find $(Build.ArtifactStagingDirectory) -name '*.zip' | head -n 1)
+      echo "Arquivo zip encontrado: $zipFile"
+      echo "Realizando o deploy para a Function App $(functionAppName)..."
+      az functionapp deployment source config-zip \
+        --resource-group $(resourceGroup) \
+        --name $(functionAppName) \
+        --src $zipFile

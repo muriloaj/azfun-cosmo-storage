@@ -1,0 +1,36 @@
+{
+    "bindings": [
+      {
+        "authLevel": "function",
+        "type": "httpTrigger",
+        "direction": "in",
+        "name": "req",
+        "route": "cosmos/{id?}",
+        "methods": [ "get", "post" ]
+      },
+      {
+        "type": "http",
+        "direction": "out",
+        "name": "$return"
+      },
+      {
+        "name": "documentIn",
+        "type": "cosmosDB",
+        "direction": "in",
+        "databaseName": "MyDatabase",
+        "collectionName": "MyCollection",
+        "connectionStringSetting": "CosmosDBConnection",
+        "id": "{id}",
+        "partitionKey": "{id}",
+        "optional": true
+      },
+      {
+        "name": "documentsOut",
+        "type": "cosmosDB",
+        "direction": "out",
+        "databaseName": "MyDatabase",
+        "collectionName": "MyCollection",
+        "connectionStringSetting": "CosmosDBConnection"
+      }
+    ]
+  }

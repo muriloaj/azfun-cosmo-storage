@@ -1,0 +1,23 @@
+{
+    "bindings": [
+      {
+        "authLevel": "function",
+        "type": "httpTrigger",
+        "direction": "in",
+        "name": "req",
+        "methods": [ "post" ]
+      },
+      {
+        "type": "http",
+        "direction": "out",
+        "name": "$return"
+      },
+      {
+        "name": "outputBlob",
+        "type": "blob",
+        "direction": "out",
+        "path": "uploads/{rand-guid}.txt",
+        "connection": "AzureWebJobsStorage"
+      }
+    ]
+  }
